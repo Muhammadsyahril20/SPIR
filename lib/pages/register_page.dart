@@ -2,7 +2,14 @@ import 'package:flutter/material.dart';
 import 'home_page.dart';
 import 'login_page.dart';
 
-class SignUpScreen extends StatelessWidget {
+class SignUpScreen extends StatefulWidget {
+  const SignUpScreen({super.key});
+
+  @override
+  _SignUpScreenState createState() => _SignUpScreenState();
+}
+
+class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
@@ -26,197 +33,307 @@ class SignUpScreen extends StatelessWidget {
     );
   }).toList();
 
-  SignUpScreen({super.key});
+  late AnimationController _controller;
+  late Animation<double> _opacity;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    )..addListener(() {
+        setState(() {});
+      });
+    _opacity = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _nameController.dispose();
+    _phoneController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Column(
-                children: [
-                  SizedBox(height: constraints.maxHeight * 0.08),
-                  Image.asset(
-                    'assets/logo.jpg', // Pake logo lokal yang sama
-                    height: 150,
-                    width: 150,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        height: 150,
-                        width: 150,
-                        color: Colors.grey,
-                        child: const Center(child: Text('Logo gagal dimuat')),
-                      );
-                    },
-                  ),
-                  SizedBox(height: constraints.maxHeight * 0.08),
-                  Text(
-                    "Daftar Akun",
-                    style: Theme.of(context)
-                        .textTheme
-                        .headlineSmall!
-                        .copyWith(fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: constraints.maxHeight * 0.05),
-                  Form(
-                    key: _formKey,
+      body: Stack(
+        children: [
+          Container(
+            decoration: const BoxDecoration(
+              color: Colors.white,
+            ),
+          ),
+          CustomPaint(
+            painter: CurvePainter(),
+            child: Container(),
+          ),
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFF00BF6D), Color(0xFF1eb090)],
+                begin: Alignment.bottomCenter,
+                end: Alignment.topCenter,
+              ),
+            ),
+          ),
+          SafeArea(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minHeight: constraints.maxHeight),
                     child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        TextFormField(
-                          controller: _nameController,
-                          decoration: const InputDecoration(
-                            hintText: 'Nama Lengkap',
-                            filled: true,
-                            fillColor: Color(0xFFF5FCF9),
-                            contentPadding: EdgeInsets.symmetric(
-                                horizontal: 16.0 * 1.5, vertical: 16.0),
-                            border: OutlineInputBorder(
-                              borderSide: BorderSide.none,
-                              borderRadius: BorderRadius.all(Radius.circular(50)),
-                            ),
-                          ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Masukkan nama lengkap';
-                            }
-                            return null;
-                          },
-                          onSaved: (name) {
-                            // Nama disimpan
-                          },
-                        ),
-                        const SizedBox(height: 16.0),
-                        TextFormField(
-                          controller: _phoneController,
-                          decoration: const InputDecoration(
-                            hintText: 'Nomor Telepon',
-                            filled: true,
-                            fillColor: Color(0xFFF5FCF9),
-                            contentPadding: EdgeInsets.symmetric(
-                                horizontal: 16.0 * 1.5, vertical: 16.0),
-                            border: OutlineInputBorder(
-                              borderSide: BorderSide.none,
-                              borderRadius: BorderRadius.all(Radius.circular(50)),
-                            ),
-                          ),
-                          keyboardType: TextInputType.phone,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Masukkan nomor telepon';
-                            }
-                            if (!RegExp(r'^\+?[1-9]\d{1,14}$').hasMatch(value)) {
-                              return 'Nomor telepon tidak valid';
-                            }
-                            return null;
-                          },
-                          onSaved: (phone) {
-                            // Nomor telepon disimpan
-                          },
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 16.0),
-                          child: TextFormField(
-                            controller: _passwordController,
-                            obscureText: true,
-                            decoration: const InputDecoration(
-                              hintText: 'Kata Sandi',
-                              filled: true,
-                              fillColor: Color(0xFFF5FCF9),
-                              contentPadding: EdgeInsets.symmetric(
-                                  horizontal: 16.0 * 1.5, vertical: 16.0),
-                              border: OutlineInputBorder(
-                                borderSide: BorderSide.none,
-                                borderRadius: BorderRadius.all(Radius.circular(50)),
-                              ),
-                            ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Masukkan kata sandi';
-                              }
-                              if (value.length < 6) {
-                                return 'Kata sandi minimal 6 karakter';
-                              }
-                              return null;
-                            },
-                            onSaved: (password) {
-                              // Kata sandi disimpan
+                        SizedBox(height: constraints.maxHeight * 0.05),
+                        AnimatedOpacity(
+                          opacity: _opacity.value,
+                          duration: const Duration(milliseconds: 1000),
+                          child: Image.asset(
+                            'assets/fix.png',
+                            height: 120,
+                            width: 120,
+                            errorBuilder: (context, error, stackTrace) {
+                              print('Error loading asset: $error');
+                              return Container(
+                                height: 120,
+                                width: 120,
+                                color: Colors.grey,
+                                child: const Center(child: Text('Logo gagal dimuat')),
+                              );
                             },
                           ),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 16.0),
-                          child: ElevatedButton(
-                            onPressed: () {
-                              if (_formKey.currentState!.validate()) {
-                                _formKey.currentState!.save();
-                                // TODO: Implementasi registrasi (misalnya kirim ke server)
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Registrasi berhasil!')),
-                                );
-                                // Navigasi ke HomePage
-                                Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => HomePage(),
-                                  ),
-                                );
-                              }
-                            },
-                            style: ElevatedButton.styleFrom(
-                              elevation: 0,
-                              backgroundColor: const Color(0xFF00BF6D),
-                              foregroundColor: Colors.white,
-                              minimumSize: const Size(double.infinity, 48),
-                              shape: const StadiumBorder(),
-                            ),
-                            child: const Text("Daftar"),
+                        SizedBox(height: constraints.maxHeight * 0.05),
+                        AnimatedOpacity(
+                          opacity: _opacity.value,
+                          duration: const Duration(milliseconds: 1200),
+                          child: Text(
+                            "Daftar Akun",
+                            style: Theme.of(context).textTheme.headlineSmall!.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                  shadows: [
+                                    Shadow(
+                                      color: Colors.black26,
+                                      offset: const Offset(2, 2),
+                                      blurRadius: 4,
+                                    ),
+                                  ],
+                                ),
                           ),
                         ),
-                        TextButton(
-                          onPressed: () {
-                            // Navigasi ke SignInScreen
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => SignInScreen(),
-                              ),
-                            );
-                          },
-                          child: Text.rich(
-                            const TextSpan(
-                              text: "Sudah punya akun? ",
-                              children: [
-                                TextSpan(
-                                  text: "Masuk",
-                                  style: TextStyle(color: Color(0xFF00BF6D)),
+                        SizedBox(height: constraints.maxHeight * 0.05),
+                        AnimatedOpacity(
+                          opacity: _opacity.value,
+                          duration: const Duration(milliseconds: 1400),
+                          child: Container(
+                            padding: const EdgeInsets.all(20.0),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.85),
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  spreadRadius: 3,
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 5),
                                 ),
                               ],
                             ),
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyMedium!
-                                .copyWith(
-                                  color: Theme.of(context)
-                                      .textTheme
-                                      .bodyLarge!
-                                      .color!
-                                      .withOpacity(0.64),
-                                ),
+                            child: Form(
+                              key: _formKey,
+                              child: Column(
+                                children: [
+                                  TextFormField(
+                                    controller: _nameController,
+                                    decoration: const InputDecoration(
+                                      hintText: 'Nama Lengkap',
+                                      filled: true,
+                                      fillColor: Color(0xFFF5FCF9),
+                                      contentPadding: EdgeInsets.symmetric(
+                                          horizontal: 20.0, vertical: 18.0),
+                                      border: OutlineInputBorder(
+                                        borderSide: BorderSide.none,
+                                        borderRadius: BorderRadius.all(Radius.circular(30)),
+                                      ),
+                                      prefixIcon: Icon(Icons.person, color: Color(0xFF00BF6D)),
+                                    ),
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return 'Masukkan nama lengkap';
+                                      }
+                                      return null;
+                                    },
+                                    onSaved: (name) {},
+                                  ),
+                                  const SizedBox(height: 16.0),
+                                  TextFormField(
+                                    controller: _phoneController,
+                                    decoration: const InputDecoration(
+                                      hintText: 'Nomor Telepon',
+                                      filled: true,
+                                      fillColor: Color(0xFFF5FCF9),
+                                      contentPadding: EdgeInsets.symmetric(
+                                          horizontal: 20.0, vertical: 18.0),
+                                      border: OutlineInputBorder(
+                                        borderSide: BorderSide.none,
+                                        borderRadius: BorderRadius.all(Radius.circular(30)),
+                                      ),
+                                      prefixIcon: Icon(Icons.phone, color: Color(0xFF00BF6D)),
+                                    ),
+                                    keyboardType: TextInputType.phone,
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return 'Masukkan nomor telepon';
+                                      }
+                                      if (!RegExp(r'^\+?[1-9]\d{1,14}$').hasMatch(value)) {
+                                        return 'Nomor telepon tidak valid';
+                                      }
+                                      return null;
+                                    },
+                                    onSaved: (phone) {},
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 16.0),
+                                    child: TextFormField(
+                                      controller: _passwordController,
+                                      obscureText: true,
+                                      decoration: const InputDecoration(
+                                        hintText: 'Kata Sandi',
+                                        filled: true,
+                                        fillColor: Color(0xFFF5FCF9),
+                                        contentPadding: EdgeInsets.symmetric(
+                                            horizontal: 20.0, vertical: 18.0),
+                                        border: OutlineInputBorder(
+                                          borderSide: BorderSide.none,
+                                          borderRadius: BorderRadius.all(Radius.circular(30)),
+                                        ),
+                                        prefixIcon: Icon(Icons.lock, color: Color(0xFF00BF6D)),
+                                      ),
+                                      validator: (value) {
+                                        if (value == null || value.isEmpty) {
+                                          return 'Masukkan kata sandi';
+                                        }
+                                        if (value.length < 6) {
+                                          return 'Kata sandi minimal 6 karakter';
+                                        }
+                                        return null;
+                                      },
+                                      onSaved: (password) {},
+                                    ),
+                                  ),
+                                 
+                                  const SizedBox(height: 20.0),
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: ElevatedButton(
+                                      onPressed: () {
+                                        if (_formKey.currentState!.validate()) {
+                                          _formKey.currentState!.save();
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            const SnackBar(content: Text('Registrasi berhasil!')),
+                                          );
+                                          Navigator.pushReplacement(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => HomePage(),
+                                            ),
+                                          );
+                                        }
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        elevation: 6,
+                                        backgroundColor: Color(0xFF00BF6D),
+                                        foregroundColor: Colors.white,
+                                        padding: const EdgeInsets.symmetric(vertical: 14),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(30),
+                                        ),
+                                      ),
+                                      child: const Text(
+                                        "Daftar",
+                                        style: TextStyle(
+                                            fontSize: 16, fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 20.0),
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.pushReplacement(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => SignInScreen(),
+                                        ),
+                                      );
+                                    },
+                                    child: Text.rich(
+                                      const TextSpan(
+                                        text: "Sudah punya akun? ",
+                                        children: [
+                                          TextSpan(
+                                            text: "Masuk",
+                                            style: TextStyle(
+                                              color: Color(0xFF00BF6D),
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                                            color: Colors.black87,
+                                          ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
                         ),
                       ],
                     ),
                   ),
-                ],
-              ),
-            );
-          },
-        ),
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
+}
+
+class CurvePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.fill;
+
+    final path = Path();
+    path.moveTo(0, size.height * 0.4); // Mulai dari 40% tinggi
+    path.quadraticBezierTo(
+      size.width * 0.5,
+      size.height * 0.5, // Puncak kurva
+      size.width,
+      size.height * 0.4,
+    );
+    path.lineTo(size.width, size.height);
+    path.lineTo(0, size.height);
+    path.close();
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

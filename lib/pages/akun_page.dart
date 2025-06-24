@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:pelaporan_insfrastruktur_rusak/pages/RiwayatLaporanPage.dart';
+import 'package:pelaporan_insfrastruktur_rusak/pages/TentangAplikasiPage.dart';
+import 'package:pelaporan_insfrastruktur_rusak/pages/UbahAkunPage.dart';
 import 'login_page.dart'; // Import untuk logout ke SignInScreen
 import 'ProsedurPelaporanPage.dart'; // Import untuk halaman prosedur pelaporan
 
@@ -48,12 +51,12 @@ class AkunPage extends StatelessWidget {
             leading: const Icon(Icons.edit, color: Color(0xFF00BF6D)),
             title: const Text('Ubah Akun'),
             trailing: const Icon(Icons.chevron_right, color: Colors.grey),
-            onTap: () {
-              // TODO: Navigasi ke halaman ubah akun
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Fitur Ubah Akun belum tersedia')),
-              );
-            },
+           onTap: () {
+  Navigator.push(
+    context,
+    MaterialPageRoute(builder: (context) => UbahAkunPage()),
+  );
+},
           ),
           const Divider(),
           ListTile(
@@ -74,9 +77,22 @@ class AkunPage extends StatelessWidget {
             title: const Text('Tentang Aplikasi'),
             trailing: const Icon(Icons.chevron_right, color: Colors.grey),
             onTap: () {
-              // TODO: Navigasi ke halaman tentang aplikasi
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Fitur Tentang Aplikasi belum tersedia')),
+  Navigator.push(
+    context,
+    MaterialPageRoute(builder: (context) => TentangAplikasiPage()),
+  );
+},
+          ),
+          const Divider(),
+          ListTile(
+            leading: const Icon(Icons.history, color: Color(0xFF00BF6D)),
+            title: const Text('Riwayat Laporan'),
+            trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+            onTap: () {
+              // Navigasi ke halaman riwayat laporan
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => RiwayatLaporanPage()),
               );
             },
           ),

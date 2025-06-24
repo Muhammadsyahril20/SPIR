@@ -1,92 +1,241 @@
 import 'package:flutter/material.dart';
 
-import 'package:flutter/cupertino.dart';
 class SemuaLaporanPage extends StatelessWidget {
   const SemuaLaporanPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: Container(
-          constraints: const BoxConstraints(maxWidth: 400),
-          child: ListView.separated(
-            itemCount: _feedItems.length,
-            separatorBuilder: (BuildContext context, int index) {
-              return const Divider();
-            },
-            itemBuilder: (BuildContext context, int index) {
-              final item = _feedItems[index];
-              return Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
+      appBar: AppBar(
+        title: const Text('Semua Laporan'),
+        backgroundColor: const Color(0xFF00BF6D),
+        foregroundColor: Colors.white,
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(16.0),
+        children: [
+          // Profil
+          Container(
+            padding: const EdgeInsets.all(16.0),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFF00BF6D), Color(0xFF1eb090)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.2),
+                  spreadRadius: 3,
+                  blurRadius: 7,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   children: [
-                    _AvatarImage(item.user.imageUrl),
+                    const CircleAvatar(
+                      radius: 30,
+                      backgroundColor: Colors.white,
+                      child: Icon(Icons.person, color: Color(0xFF00BF6D), size: 40),
+                    ),
                     const SizedBox(width: 16),
                     Expanded(
                       child: Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          const Text(
+                            'Rian',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 20,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
                           Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Expanded(
-                                child: RichText(
-                                  overflow: TextOverflow.ellipsis,
-                                  text: TextSpan(
-                                    children: [
-                                      TextSpan(
-                                        text: item.user.fullName,
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16,
-                                          color: Colors.black,
-                                        ),
-                                      ),
-                                      TextSpan(
-                                        text: " @${item.user.userName}",
-                                        style: Theme.of(
-                                          context,
-                                        ).textTheme.bodySmall,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
+                              const Icon(Icons.check_circle, color: Colors.white, size: 16),
+                              const SizedBox(width: 4),
                               Text(
-                                '· 5m',
-                                style: Theme.of(context).textTheme.bodySmall,
-                              ),
-                              const Padding(
-                                padding: EdgeInsets.only(left: 8.0),
-                                child: Icon(Icons.more_horiz),
+                                'Pelapor Aktif',
+                                style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.white),
                               ),
                             ],
                           ),
-                          if (item.content != null) Text(item.content!),
-                          if (item.imageUrl != null)
-                            Container(
-                              height: 200,
-                              margin: const EdgeInsets.only(top: 8.0),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(8.0),
-                                image: DecorationImage(
-                                  fit: BoxFit.cover,
-                                  image: NetworkImage(item.imageUrl!),
-                                ),
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              const Icon(Icons.access_time, color: Colors.white, size: 16),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Terakhir Login: 02:52 PM, 23 Jun 2025',
+                                style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.white70),
                               ),
-                            ),
-                          _ActionsRow(item: item),
+                            ],
+                          ),
                         ],
                       ),
                     ),
                   ],
                 ),
-              );
-            },
+                const SizedBox(height: 12),
+                Container(
+                  height: 2,
+                  width: double.infinity,
+                  color: Colors.white.withOpacity(0.3),
+                ),
+                const SizedBox(height: 12),
+                const Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Total Laporan: 3',
+                      style: TextStyle(color: Colors.white, fontSize: 14),
+                    ),
+                    Icon(Icons.star, color: Colors.white, size: 20),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+          // Banner Kategori Laporan
+          Container(
+            height: 120,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              children: [
+                _buildCategoryBanner('Jembatan Rusak', 'assets/jembatan.jpg'),
+                const SizedBox(width: 10),
+                _buildCategoryBanner('Jalan Rusak', 'assets/jembatan.jpg'),
+                const SizedBox(width: 10),
+                _buildCategoryBanner('Lampu Rusak', 'assets/jembatan.jpg'),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+          // Daftar Laporan
+          ..._laporanItems.map((item) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10.0),
+              child: Card(
+                elevation: 3,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: InkWell(
+                  onTap: () {},
+                  borderRadius: BorderRadius.circular(12),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                         _AvatarImage(),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                item.judul,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                item.deskripsi,
+                                style: Theme.of(context).textTheme.bodyMedium,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Lokasi: ${item.lokasi}',
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                              if (item.fotoUrl != null)
+                                Container(
+                                  height: 150,
+                                  margin: const EdgeInsets.only(top: 8.0),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(8.0),
+                                    image: DecorationImage(
+                                      fit: BoxFit.cover,
+                                      image: AssetImage(item.fotoUrl!),
+                                    ),
+                                  ),
+                                ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Status: ${item.status}',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: item.status == 'Sudah Selesai' ? Colors.green : Colors.orange,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCategoryBanner(String title, String imagePath) {
+    return Container(
+      width: 200,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        image: DecorationImage(
+          image: AssetImage(imagePath),
+          fit: BoxFit.cover,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.15),
+            spreadRadius: 2,
+            blurRadius: 5,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          gradient: LinearGradient(
+            begin: Alignment.bottomCenter,
+            end: Alignment.topCenter,
+            colors: [
+              Colors.black.withOpacity(0.5),
+              Colors.transparent,
+            ],
+          ),
+        ),
+        padding: const EdgeInsets.all(8.0),
+        child: Align(
+          alignment: Alignment.bottomLeft,
+          child: Text(
+            title,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
           ),
         ),
       ),
@@ -95,141 +244,57 @@ class SemuaLaporanPage extends StatelessWidget {
 }
 
 class _AvatarImage extends StatelessWidget {
-  final String url;
-  const _AvatarImage(this.url);
-
   @override
   Widget build(BuildContext context) {
     return Container(
       width: 60,
       height: 60,
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         shape: BoxShape.circle,
-        image: DecorationImage(image: NetworkImage(url)),
-      ),
-    );
-  }
-}
-
-class _ActionsRow extends StatelessWidget {
-  final FeedItem item;
-  const _ActionsRow({required this.item});
-
-  @override
-  Widget build(BuildContext context) {
-    return Theme(
-      data: Theme.of(context).copyWith(
-        iconTheme: const IconThemeData(color: Colors.grey, size: 18),
-        textButtonTheme: TextButtonThemeData(
-          style: ButtonStyle(
-            foregroundColor: WidgetStateProperty.all(Colors.grey),
-          ),
+        image: DecorationImage(
+          image: AssetImage('assets/logo.jpg'),
         ),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          TextButton.icon(
-            onPressed: () {},
-            icon: const Icon(Icons.mode_comment_outlined),
-            label: Text(
-              item.commentsCount == 0 ? '' : item.commentsCount.toString(),
-            ),
-          ),
-          TextButton.icon(
-            onPressed: () {},
-            icon: const Icon(Icons.repeat_rounded),
-            label: Text(
-              item.retweetsCount == 0 ? '' : item.retweetsCount.toString(),
-            ),
-          ),
-          TextButton.icon(
-            onPressed: () {},
-            icon: const Icon(Icons.favorite_border),
-            label: Text(item.likesCount == 0 ? '' : item.likesCount.toString()),
-          ),
-          IconButton(
-            icon: const Icon(CupertinoIcons.share_up),
-            onPressed: () {},
-          ),
-        ],
-      ),
     );
   }
 }
 
-class FeedItem {
-  final String? content;
-  final String? imageUrl;
-  final User user;
-  final int commentsCount;
-  final int likesCount;
-  final int retweetsCount;
+class LaporanItem {
+  final String judul;
+  final String deskripsi;
+  final String lokasi;
+  final String? fotoUrl;
+  final String status;
 
-  FeedItem({
-    this.content,
-    this.imageUrl,
-    required this.user,
-    this.commentsCount = 0,
-    this.likesCount = 0,
-    this.retweetsCount = 0,
+  LaporanItem({
+    required this.judul,
+    required this.deskripsi,
+    required this.lokasi,
+    this.fotoUrl,
+    required this.status,
   });
 }
 
-class User {
-  final String fullName;
-  final String imageUrl;
-  final String userName;
-
-  User(this.fullName, this.userName, this.imageUrl);
-}
-
-final List<User> _users = [
-  User("John Doe", "john_doe", "https://picsum.photos/id/1062/80/80"),
-  User("Jane Doe", "jane_doe", "https://picsum.photos/id/1066/80/80"),
-  User("Jack Doe", "jack_doe", "https://picsum.photos/id/1072/80/80"),
-  User("Jill Doe", "jill_doe", "https://picsum.photos/id/133/80/80"),
-];
-
-final List<FeedItem> _feedItems = [
-  FeedItem(
-    content:
-        "A son asked his father (a programmer) why the sun rises in the east, and sets in the west. His response? It works, don’t touch!",
-    user: _users[0],
-    imageUrl: "https://picsum.photos/id/1000/960/540",
-    likesCount: 100,
-    commentsCount: 10,
-    retweetsCount: 1,
+final List<LaporanItem> _laporanItems = [
+  LaporanItem(
+    judul: 'Jembatan Retak',
+    deskripsi: 'Jembatan di Jalan Raya Utama mengalami retakan besar.',
+    lokasi: 'Jalan Raya Utama, Jakarta',
+    fotoUrl: 'assets/jembatan.jpg',
+    status: 'Sedang Diproses',
   ),
-  FeedItem(
-    user: _users[1],
-    imageUrl: "https://picsum.photos/id/1001/960/540",
-    likesCount: 10,
-    commentsCount: 2,
+  LaporanItem(
+    judul: 'Lampu Jalan Mati',
+    deskripsi: 'Beberapa lampu jalan di perumahan tidak menyala.',
+    lokasi: 'Perumahan Citra, Bandung',
+    fotoUrl: 'assets/jembatan.jpg',
+    status: 'Sudah Selesai',
   ),
-  FeedItem(
-    user: _users[0],
-    content:
-        "How many programmers does it take to change a light bulb? None, that’s a hardware problem.",
-    likesCount: 50,
-    commentsCount: 22,
-    retweetsCount: 30,
+  LaporanItem(
+    judul: 'Jalan Berlubang',
+    deskripsi: 'Jalan utama berlubang dan membahayakan pengguna jalan.',
+    lokasi: 'Jalan Sudirman, Surabaya',
+    fotoUrl: 'assets/logo.jpg',
+    status: 'Sedang Diproses',
   ),
-  FeedItem(
-    user: _users[1],
-    content:
-        "Programming today is a race between software engineers striving to build bigger and better idiot-proof programs, and the Universe trying to produce bigger and better idiots. So far, the Universe is winning.",
-    imageUrl: "https://picsum.photos/id/1002/960/540",
-    likesCount: 500,
-    commentsCount: 202,
-    retweetsCount: 120,
-  ),
-  FeedItem(
-    user: _users[2],
-    content: "Good morning!",
-    imageUrl: "https://picsum.photos/id/1003/960/540",
-  ),
-  FeedItem(user: _users[1], imageUrl: "https://picsum.photos/id/1004/960/540"),
-  FeedItem(user: _users[3], imageUrl: "https://picsum.photos/id/1005/960/540"),
-  FeedItem(user: _users[0], imageUrl: "https://picsum.photos/id/1006/960/540"),
 ];
