@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:io';
+import 'package:pelaporan_insfrastruktur_rusak/pages/map_picker_date.dart';
+import '../services/api_service.dart';
 
 class LaporkanPage extends StatefulWidget {
   const LaporkanPage({super.key});
@@ -11,17 +13,28 @@ class LaporkanPage extends StatefulWidget {
 
 class _LaporkanPageState extends State<LaporkanPage> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _locationController = TextEditingController();
+  final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
-  final TextEditingController _reporterNameController = TextEditingController();
-  final TextEditingController _reporterPhoneController = TextEditingController();
-  DateTime? _selectedDate;
+  final TextEditingController _locationController = TextEditingController();
+  final TextEditingController _latitudeController = TextEditingController();
+  final TextEditingController _longitudeController = TextEditingController();
   XFile? _image;
+  int? _selectedCategoryId;
+  Future<List<Map<String, dynamic>>>? _categoriesFuture;
 
   final ImagePicker _picker = ImagePicker();
+  final ApiService _apiService = ApiService();
+
+  @override
+  void initState() {
+    super.initState();
+    _categoriesFuture = _apiService.fetchCategories();
+  }
 
   Future<void> _pickImage() async {
-    final XFile? pickedImage = await _picker.pickImage(source: ImageSource.gallery);
+    final XFile? pickedImage = await _picker.pickImage(
+      source: ImageSource.gallery,
+    );
     if (pickedImage != null) {
       setState(() {
         _image = pickedImage;
@@ -29,21 +42,21 @@ class _LaporkanPageState extends State<LaporkanPage> {
     }
   }
 
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime.now(),
+  Future<void> _pickLocation() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const MapPickerPage()),
     );
-    if (picked != null && picked != _selectedDate) {
+    if (result != null) {
       setState(() {
-        _selectedDate = picked;
+        _locationController.text = result['address'];
+        _latitudeController.text = result['latitude'].toString();
+        _longitudeController.text = result['longitude'].toString();
       });
     }
   }
 
-  void _submitReport() {
+  Future<void> _submitReport() async {
     if (_formKey.currentState!.validate()) {
       if (_image == null) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -51,27 +64,44 @@ class _LaporkanPageState extends State<LaporkanPage> {
         );
         return;
       }
-      if (_selectedDate == null) {
+      if (_selectedCategoryId == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Harap pilih tanggal laporan')),
+          const SnackBar(content: Text('Harap pilih kategori laporan')),
         );
         return;
       }
-      _formKey.currentState!.save();
-      // TODO: Proses data laporan (misalnya kirim ke server)
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Laporan berhasil dikirim')),
-      );
-      // Reset form
-      _formKey.currentState!.reset();
-      setState(() {
-        _image = null;
-        _selectedDate = null;
-        _locationController.clear();
-        _descriptionController.clear();
-        _reporterNameController.clear();
-        _reporterPhoneController.clear();
-      });
+
+      try {
+        await _apiService.createReport(
+          title: _titleController.text,
+          description: _descriptionController.text,
+          location: _locationController.text,
+          latitude: double.parse(_latitudeController.text),
+          longitude: double.parse(_longitudeController.text),
+          photo: File(_image!.path),
+          categoryId: _selectedCategoryId!,
+        );
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Laporan berhasil dikirim')),
+        );
+
+        // Reset form
+        _formKey.currentState!.reset();
+        setState(() {
+          _image = null;
+          _selectedCategoryId = null;
+          _titleController.clear();
+          _descriptionController.clear();
+          _locationController.clear();
+          _latitudeController.clear();
+          _longitudeController.clear();
+        });
+      } catch (e) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Gagal mengirim laporan: $e')));
+      }
     }
   }
 
@@ -91,6 +121,77 @@ class _LaporkanPageState extends State<LaporkanPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Kategori
+                const Text(
+                  'Kategori Laporan',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+                const SizedBox(height: 8),
+                FutureBuilder<List<Map<String, dynamic>>>(
+                  future: _categoriesFuture,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const CircularProgressIndicator();
+                    } else if (snapshot.hasError) {
+                      return const Text('Gagal memuat kategori');
+                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      return const Text('Tidak ada kategori tersedia');
+                    }
+                    return DropdownButtonFormField<int>(
+                      decoration: const InputDecoration(
+                        filled: true,
+                        fillColor: Color(0xFFF5FCF9),
+                        border: OutlineInputBorder(
+                          borderSide: BorderSide.none,
+                          borderRadius: BorderRadius.all(Radius.circular(12)),
+                        ),
+                      ),
+                      hint: const Text('Pilih Kategori'),
+                      value: _selectedCategoryId,
+                      items:
+                          snapshot.data!.map((category) {
+                            return DropdownMenuItem<int>(
+                              value: category['id'],
+                              child: Text(category['name']),
+                            );
+                          }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedCategoryId = value;
+                        });
+                      },
+                      validator: (value) {
+                        if (value == null) {
+                          return 'Pilih kategori laporan';
+                        }
+                        return null;
+                      },
+                    );
+                  },
+                ),
+                const SizedBox(height: 16),
+
+                // Judul
+                TextFormField(
+                  controller: _titleController,
+                  decoration: const InputDecoration(
+                    labelText: 'Judul Laporan',
+                    filled: true,
+                    fillColor: Color(0xFFF5FCF9),
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide.none,
+                      borderRadius: BorderRadius.all(Radius.circular(12)),
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Masukkan judul laporan';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+
                 // Upload Foto
                 const Text(
                   'Foto Laporan',
@@ -107,34 +208,70 @@ class _LaporkanPageState extends State<LaporkanPage> {
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(color: Colors.grey.shade300),
                     ),
-                    child: _image == null
-                        ? const Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.camera_alt, color: Colors.grey, size: 40),
-                                Text('Ketuk untuk unggah foto'),
-                              ],
+                    child:
+                        _image == null
+                            ? const Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.camera_alt,
+                                    color: Colors.grey,
+                                    size: 40,
+                                  ),
+                                  Text('Ketuk untuk unggah foto'),
+                                ],
+                              ),
+                            )
+                            : ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Image.file(
+                                File(_image!.path),
+                                fit: BoxFit.cover,
+                                height: 150,
+                                width: double.infinity,
+                              ),
                             ),
-                          )
-                        : ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            child: Image.file(
-                              File(_image!.path),
-                              fit: BoxFit.cover,
-                              height: 150,
-                              width: double.infinity,
-                            ),
-                          ),
                   ),
                 ),
                 const SizedBox(height: 16),
 
                 // Lokasi
+                const Text(
+                  'Lokasi Laporan',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+                const SizedBox(height: 8),
+                GestureDetector(
+                  onTap: _pickLocation,
+                  child: AbsorbPointer(
+                    child: TextFormField(
+                      controller: _locationController,
+                      decoration: const InputDecoration(
+                        labelText: 'Lokasi',
+                        filled: true,
+                        fillColor: Color(0xFFF5FCF9),
+                        border: OutlineInputBorder(
+                          borderSide: BorderSide.none,
+                          borderRadius: BorderRadius.all(Radius.circular(12)),
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Pilih lokasi laporan';
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Latitude
                 TextFormField(
-                  controller: _locationController,
+                  controller: _latitudeController,
                   decoration: const InputDecoration(
-                    labelText: 'Lokasi',
+                    labelText: 'Latitude',
                     filled: true,
                     fillColor: Color(0xFFF5FCF9),
                     border: OutlineInputBorder(
@@ -142,9 +279,34 @@ class _LaporkanPageState extends State<LaporkanPage> {
                       borderRadius: BorderRadius.all(Radius.circular(12)),
                     ),
                   ),
+                  keyboardType: TextInputType.number,
+                  readOnly: true,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Masukkan lokasi laporan';
+                      return 'Pilih lokasi untuk mendapatkan latitude';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+
+                // Longitude
+                TextFormField(
+                  controller: _longitudeController,
+                  decoration: const InputDecoration(
+                    labelText: 'Longitude',
+                    filled: true,
+                    fillColor: Color(0xFFF5FCF9),
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide.none,
+                      borderRadius: BorderRadius.all(Radius.circular(12)),
+                    ),
+                  ),
+                  keyboardType: TextInputType.number,
+                  readOnly: true,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Pilih lokasi untuk mendapatkan longitude';
                     }
                     return null;
                   },
@@ -167,79 +329,6 @@ class _LaporkanPageState extends State<LaporkanPage> {
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Masukkan deskripsi laporan';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-
-                // Tanggal
-                GestureDetector(
-                  onTap: () => _selectDate(context),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF5FCF9),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          _selectedDate == null
-                              ? 'Pilih Tanggal'
-                              : '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}',
-                          style: TextStyle(
-                            color: _selectedDate == null ? Colors.grey : Colors.black,
-                          ),
-                        ),
-                        const Icon(Icons.calendar_today, color: Colors.grey),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-
-                // Data Pelapor: Nama
-                TextFormField(
-                  controller: _reporterNameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Nama Pelapor',
-                    filled: true,
-                    fillColor: Color(0xFFF5FCF9),
-                    border: OutlineInputBorder(
-                      borderSide: BorderSide.none,
-                      borderRadius: BorderRadius.all(Radius.circular(12)),
-                    ),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Masukkan nama pelapor';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-
-                // Data Pelapor: Nomor Telepon
-                TextFormField(
-                  controller: _reporterPhoneController,
-                  decoration: const InputDecoration(
-                    labelText: 'Nomor Telepon Pelapor',
-                    filled: true,
-                    fillColor: Color(0xFFF5FCF9),
-                    border: OutlineInputBorder(
-                      borderSide: BorderSide.none,
-                      borderRadius: BorderRadius.all(Radius.circular(12)),
-                    ),
-                  ),
-                  keyboardType: TextInputType.phone,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Masukkan nomor telepon';
-                    }
-                    if (!RegExp(r'^\+?[1-9]\d{1,14}$').hasMatch(value)) {
-                      return 'Nomor telepon tidak valid';
                     }
                     return null;
                   },

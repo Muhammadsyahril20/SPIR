@@ -3,31 +3,42 @@ import 'laporkan_page.dart';
 import 'semua_laporan_page.dart';
 import 'akun_page.dart';
 
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+class MainLayout extends StatefulWidget {
+  final int initialIndex;
+
+  const MainLayout({super.key, this.initialIndex = 0});
 
   @override
-  _HomePageState createState() => _HomePageState();
+  State<MainLayout> createState() => _MainLayoutState();
 }
 
-class _HomePageState extends State<HomePage> {
-  int _currentIndex = 0;
+class _MainLayoutState extends State<MainLayout> {
+  late int _currentIndex;
 
-  final List<Widget> _pages = [LaporkanPage(), SemuaLaporanPage(), AkunPage()];
+  final List<Widget> _pages = const [
+    LaporkanPage(),
+    SemuaLaporanPage(),
+    AkunPage(),
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = widget.initialIndex;
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _pages[_currentIndex],
+      body: IndexedStack(index: _currentIndex, children: _pages),
       floatingActionButton:
           _currentIndex == 0
               ? null
               : FloatingActionButton(
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => LaporkanPage()),
-                  );
+                  setState(() {
+                    _currentIndex = 0;
+                  });
                 },
                 backgroundColor: const Color(0xFF00BF6D),
                 tooltip: 'Laporkan Kerusakan',
@@ -35,12 +46,12 @@ class _HomePageState extends State<HomePage> {
               ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
-        selectedItemColor: const Color(0xFF00BF6D), // Warna hijau saat aktif
-        unselectedItemColor: Colors.grey, // Warna abu-abu saat tidak aktif
-        items: [
+        selectedItemColor: const Color(0xFF00BF6D),
+        unselectedItemColor: Colors.grey,
+        items: const [
           BottomNavigationBarItem(icon: Icon(Icons.report), label: 'Laporkan'),
           BottomNavigationBarItem(
-            icon: Icon(Icons.home),
+            icon: Icon(Icons.list),
             label: 'Semua Laporan',
           ),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Akun'),

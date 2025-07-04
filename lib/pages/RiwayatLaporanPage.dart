@@ -1,7 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:pelaporan_insfrastruktur_rusak/models/laporan_model.dart';
+import 'package:pelaporan_insfrastruktur_rusak/services/api_service.dart';
 
-class RiwayatLaporanPage extends StatelessWidget {
+class RiwayatLaporanPage extends StatefulWidget {
   const RiwayatLaporanPage({super.key});
+
+  @override
+  State<RiwayatLaporanPage> createState() => _RiwayatLaporanPageState();
+}
+
+class _RiwayatLaporanPageState extends State<RiwayatLaporanPage> {
+  late Future<List<Laporan>> _futureLaporan;
+
+  @override
+  void initState() {
+    super.initState();
+    _futureLaporan = ApiService().getMyReports();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -11,75 +26,120 @@ class RiwayatLaporanPage extends StatelessWidget {
         backgroundColor: const Color(0xFF00BF6D),
         foregroundColor: Colors.white,
       ),
-      body: Center(
-        child: Container(
-          constraints: const BoxConstraints(maxWidth: 400),
-          child: ListView.separated(
-            itemCount: _laporanItems.length,
-            separatorBuilder: (BuildContext context, int index) {
-              return const Divider();
-            },
-            itemBuilder: (BuildContext context, int index) {
-              final item = _laporanItems[index];
-              return Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
+      body: FutureBuilder<List<Laporan>>(
+        future: _futureLaporan,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Terjadi kesalahan: ${snapshot.error}'));
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Center(child: Text('Belum ada laporan'));
+          }
+
+          final laporanList = snapshot.data!;
+          return ListView.separated(
+            itemCount: laporanList.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 12),
+            padding: const EdgeInsets.all(16),
+            itemBuilder: (context, index) {
+              final item = laporanList[index];
+              return Card(
+                elevation: 3,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _AvatarImage(),
-                    const SizedBox(width: 16),
-                    Expanded(
+                    if (item.photoUrl != null)
+                      ClipRRect(
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(16),
+                        ),
+                        child: Image.network(
+                          item.photoUrl!,
+                          height: 180,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    Padding(
+                      padding: const EdgeInsets.all(16),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.person,
+                                size: 20,
+                                color: Colors.grey,
+                              ),
+                              const SizedBox(width: 6),
+                              const Text(
+                                'Saya',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              const Spacer(),
+                              Icon(
+                                item.status == 'selesai'
+                                    ? Icons.check_circle
+                                    : Icons.hourglass_top,
+                                color:
+                                    item.status == 'selesai'
+                                        ? Colors.green
+                                        : Colors.orange,
+                                size: 20,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                item.status == 'selesai'
+                                    ? 'Selesai'
+                                    : 'Diproses',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color:
+                                      item.status == 'selesai'
+                                          ? Colors.green
+                                          : Colors.orange,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
                           Text(
-                            'Rian', // Nama kamu
+                            item.title,
                             style: const TextStyle(
-                              fontWeight: FontWeight.bold,
                               fontSize: 16,
-                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            item.judul,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
+                            item.description,
+                            style: const TextStyle(fontSize: 14),
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            item.deskripsi,
-                            style: Theme.of(context).textTheme.bodyMedium,
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Lokasi: ${item.lokasi}',
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                          if (item.fotoUrl != null)
-                            Container(
-                              height: 200,
-                              margin: const EdgeInsets.only(top: 8.0),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(8.0),
-                                image: DecorationImage(
-                                  fit: BoxFit.cover,
-                                  image: AssetImage(item.fotoUrl!),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.location_on,
+                                size: 16,
+                                color: Colors.grey,
+                              ),
+                              const SizedBox(width: 4),
+                              Expanded(
+                                child: Text(
+                                  item.location,
+                                  style: const TextStyle(
+                                    color: Colors.black54,
+                                    fontSize: 13,
+                                  ),
                                 ),
                               ),
-                            ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Status: ${item.status}',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color:
-                                  item.status == 'Sudah Selesai'
-                                      ? Colors.green
-                                      : Colors.orange,
-                            ),
+                            ],
                           ),
                         ],
                       ),
@@ -88,24 +148,8 @@ class RiwayatLaporanPage extends StatelessWidget {
                 ),
               );
             },
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _AvatarImage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 60,
-      height: 60,
-      decoration: const BoxDecoration(
-        shape: BoxShape.circle,
-        image: DecorationImage(
-          image: AssetImage('assets/logo.jpg'), // Pake logo lokal
-        ),
+          );
+        },
       ),
     );
   }
@@ -126,14 +170,3 @@ class LaporanItem {
     required this.status,
   });
 }
-
-final List<LaporanItem> _laporanItems = [
-  LaporanItem(
-    judul: 'Jembatan Retak',
-    deskripsi: 'Jembatan di Jalan Raya Utama mengalami retakan besar.',
-    lokasi: 'Jalan Raya Utama, Jakarta',
-    fotoUrl: 'assets/jembatan.jpg', // Pake logo sebagai placeholder
-    status: 'Sedang Diproses',
-  ),
-];
-

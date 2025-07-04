@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'home_page.dart';
 import 'login_page.dart';
+import 'package:pelaporan_insfrastruktur_rusak/services/api_service.dart';
+import 'package:awesome_dialog/awesome_dialog.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -9,29 +10,12 @@ class SignUpScreen extends StatefulWidget {
   _SignUpScreenState createState() => _SignUpScreenState();
 }
 
-class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderStateMixin {
+class _SignUpScreenState extends State<SignUpScreen>
+    with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  String? _selectedCountry;
-
-  // Daftar negara untuk dropdown
-  static final List<DropdownMenuItem<String>> countries = [
-    "Indonesia",
-    "Bangladesh",
-    "Switzerland",
-    "Canada",
-    "Japan",
-    "Germany",
-    "Australia",
-    "Sweden",
-  ].map<DropdownMenuItem<String>>((String value) {
-    return DropdownMenuItem<String>(
-      value: value,
-      child: Text(value),
-    );
-  }).toList();
 
   late AnimationController _controller;
   late Animation<double> _opacity;
@@ -43,11 +27,12 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
       vsync: this,
       duration: const Duration(milliseconds: 1000),
     )..addListener(() {
-        setState(() {});
-      });
-    _opacity = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+      setState(() {});
+    });
+    _opacity = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
     _controller.forward();
   }
 
@@ -65,15 +50,8 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
     return Scaffold(
       body: Stack(
         children: [
-          Container(
-            decoration: const BoxDecoration(
-              color: Colors.white,
-            ),
-          ),
-          CustomPaint(
-            painter: CurvePainter(),
-            child: Container(),
-          ),
+          Container(decoration: const BoxDecoration(color: Colors.white)),
+          CustomPaint(painter: CurvePainter(), child: Container()),
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -89,7 +67,9 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                 return SingleChildScrollView(
                   padding: const EdgeInsets.symmetric(horizontal: 24.0),
                   child: ConstrainedBox(
-                    constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight,
+                    ),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -107,7 +87,9 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                                 height: 120,
                                 width: 120,
                                 color: Colors.grey,
-                                child: const Center(child: Text('Logo gagal dimuat')),
+                                child: const Center(
+                                  child: Text('Logo gagal dimuat'),
+                                ),
                               );
                             },
                           ),
@@ -118,17 +100,19 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                           duration: const Duration(milliseconds: 1200),
                           child: Text(
                             "Daftar Akun",
-                            style: Theme.of(context).textTheme.headlineSmall!.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                  shadows: [
-                                    Shadow(
-                                      color: Colors.black26,
-                                      offset: const Offset(2, 2),
-                                      blurRadius: 4,
-                                    ),
-                                  ],
+                            style: Theme.of(
+                              context,
+                            ).textTheme.headlineSmall!.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              shadows: [
+                                Shadow(
+                                  color: Colors.black26,
+                                  offset: const Offset(2, 2),
+                                  blurRadius: 4,
                                 ),
+                              ],
+                            ),
                           ),
                         ),
                         SizedBox(height: constraints.maxHeight * 0.05),
@@ -160,12 +144,19 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                                       filled: true,
                                       fillColor: Color(0xFFF5FCF9),
                                       contentPadding: EdgeInsets.symmetric(
-                                          horizontal: 20.0, vertical: 18.0),
+                                        horizontal: 20.0,
+                                        vertical: 18.0,
+                                      ),
                                       border: OutlineInputBorder(
                                         borderSide: BorderSide.none,
-                                        borderRadius: BorderRadius.all(Radius.circular(30)),
+                                        borderRadius: BorderRadius.all(
+                                          Radius.circular(30),
+                                        ),
                                       ),
-                                      prefixIcon: Icon(Icons.person, color: Color(0xFF00BF6D)),
+                                      prefixIcon: Icon(
+                                        Icons.person,
+                                        color: Color(0xFF00BF6D),
+                                      ),
                                     ),
                                     validator: (value) {
                                       if (value == null || value.isEmpty) {
@@ -183,27 +174,37 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                                       filled: true,
                                       fillColor: Color(0xFFF5FCF9),
                                       contentPadding: EdgeInsets.symmetric(
-                                          horizontal: 20.0, vertical: 18.0),
+                                        horizontal: 20.0,
+                                        vertical: 18.0,
+                                      ),
                                       border: OutlineInputBorder(
                                         borderSide: BorderSide.none,
-                                        borderRadius: BorderRadius.all(Radius.circular(30)),
+                                        borderRadius: BorderRadius.all(
+                                          Radius.circular(30),
+                                        ),
                                       ),
-                                      prefixIcon: Icon(Icons.phone, color: Color(0xFF00BF6D)),
+                                      prefixIcon: Icon(
+                                        Icons.phone,
+                                        color: Color(0xFF00BF6D),
+                                      ),
                                     ),
                                     keyboardType: TextInputType.phone,
                                     validator: (value) {
-                                      if (value == null || value.isEmpty) {
+                                      if (value == null ||
+                                          value.trim().isEmpty) {
                                         return 'Masukkan nomor telepon';
                                       }
-                                      if (!RegExp(r'^\+?[1-9]\d{1,14}$').hasMatch(value)) {
-                                        return 'Nomor telepon tidak valid';
+                                      if (value.trim().length > 255) {
+                                        return 'Nomor telepon terlalu panjang';
                                       }
                                       return null;
                                     },
                                     onSaved: (phone) {},
                                   ),
                                   Padding(
-                                    padding: const EdgeInsets.symmetric(vertical: 16.0),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 16.0,
+                                    ),
                                     child: TextFormField(
                                       controller: _passwordController,
                                       obscureText: true,
@@ -212,12 +213,19 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                                         filled: true,
                                         fillColor: Color(0xFFF5FCF9),
                                         contentPadding: EdgeInsets.symmetric(
-                                            horizontal: 20.0, vertical: 18.0),
+                                          horizontal: 20.0,
+                                          vertical: 18.0,
+                                        ),
                                         border: OutlineInputBorder(
                                           borderSide: BorderSide.none,
-                                          borderRadius: BorderRadius.all(Radius.circular(30)),
+                                          borderRadius: BorderRadius.all(
+                                            Radius.circular(30),
+                                          ),
                                         ),
-                                        prefixIcon: Icon(Icons.lock, color: Color(0xFF00BF6D)),
+                                        prefixIcon: Icon(
+                                          Icons.lock,
+                                          color: Color(0xFF00BF6D),
+                                        ),
                                       ),
                                       validator: (value) {
                                         if (value == null || value.isEmpty) {
@@ -231,38 +239,93 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                                       onSaved: (password) {},
                                     ),
                                   ),
-                                 
+
                                   const SizedBox(height: 20.0),
                                   SizedBox(
                                     width: double.infinity,
                                     child: ElevatedButton(
-                                      onPressed: () {
+                                      onPressed: () async {
                                         if (_formKey.currentState!.validate()) {
-                                          _formKey.currentState!.save();
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            const SnackBar(content: Text('Registrasi berhasil!')),
-                                          );
-                                          Navigator.pushReplacement(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) => HomePage(),
-                                            ),
-                                          );
+                                          final name =
+                                              _nameController.text.trim();
+                                          final phone =
+                                              _phoneController.text.trim();
+                                          final password =
+                                              _passwordController.text;
+
+                                          final result = await ApiService()
+                                              .register(name, phone, password);
+
+                                          if (result['status']) {
+                                            AwesomeDialog(
+                                              context: context,
+                                              dialogType: DialogType.success,
+                                              animType: AnimType.bottomSlide,
+                                              title: 'Pendaftaran Berhasil',
+                                              desc:
+                                                  'Akun Anda berhasil dibuat. Silakan login untuk melanjutkan.',
+                                              btnOkText: 'Login',
+                                              btnOkOnPress: () {
+                                                Navigator.pushReplacement(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder:
+                                                        (context) =>
+                                                            const SignInScreen(),
+                                                  ),
+                                                );
+                                              },
+                                              btnOkColor: const Color(
+                                                0xFF00BF6D,
+                                              ),
+                                            ).show();
+                                          } else {
+                                            String errorText = '';
+                                            if (result['errors'] != null) {
+                                              result['errors'].forEach((
+                                                key,
+                                                value,
+                                              ) {
+                                                errorText += '${value[0]}\n';
+                                              });
+                                            } else {
+                                              errorText =
+                                                  result['message'] ??
+                                                  'Terjadi kesalahan';
+                                            }
+
+                                            AwesomeDialog(
+                                              context: context,
+                                              dialogType: DialogType.error,
+                                              animType: AnimType.rightSlide,
+                                              title: 'Gagal Mendaftar',
+                                              desc: errorText,
+                                              btnOkText: 'OK',
+                                              btnOkColor: Colors.red,
+                                              btnOkOnPress: () {},
+                                            ).show();
+                                          }
                                         }
                                       },
                                       style: ElevatedButton.styleFrom(
                                         elevation: 6,
                                         backgroundColor: Color(0xFF00BF6D),
                                         foregroundColor: Colors.white,
-                                        padding: const EdgeInsets.symmetric(vertical: 14),
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 14,
+                                        ),
                                         shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(30),
+                                          borderRadius: BorderRadius.circular(
+                                            30,
+                                          ),
                                         ),
                                       ),
                                       child: const Text(
                                         "Daftar",
                                         style: TextStyle(
-                                            fontSize: 16, fontWeight: FontWeight.bold),
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -289,9 +352,10 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                                           ),
                                         ],
                                       ),
-                                      style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                                            color: Colors.black87,
-                                          ),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium!
+                                          .copyWith(color: Colors.black87),
                                     ),
                                   ),
                                 ],
@@ -315,9 +379,10 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
 class CurvePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.white
-      ..style = PaintingStyle.fill;
+    final paint =
+        Paint()
+          ..color = Colors.white
+          ..style = PaintingStyle.fill;
 
     final path = Path();
     path.moveTo(0, size.height * 0.4); // Mulai dari 40% tinggi
