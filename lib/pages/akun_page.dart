@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:pelaporan_insfrastruktur_rusak/models/user_model.dart';
-import 'package:pelaporan_insfrastruktur_rusak/pages/RiwayatLaporanPage.dart';
 import 'package:pelaporan_insfrastruktur_rusak/pages/TentangAplikasiPage.dart';
 import 'package:pelaporan_insfrastruktur_rusak/pages/UbahAkunPage.dart';
 import 'package:pelaporan_insfrastruktur_rusak/services/api_service.dart';
@@ -128,17 +127,6 @@ class _AkunPageState extends State<AkunPage> {
                         context,
                         MaterialPageRoute(
                           builder: (_) => const TentangAplikasiPage(),
-                        ),
-                      ),
-                ),
-                _buildMenuTile(
-                  icon: Icons.history,
-                  title: "Riwayat Laporan",
-                  onTap:
-                      () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const RiwayatLaporanPage(),
                         ),
                       ),
                 ),

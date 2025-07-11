@@ -16,6 +16,7 @@ class _SignUpScreenState extends State<SignUpScreen>
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  bool _obscurePassword = true;
 
   late AnimationController _controller;
   late Animation<double> _opacity;
@@ -207,24 +208,39 @@ class _SignUpScreenState extends State<SignUpScreen>
                                     ),
                                     child: TextFormField(
                                       controller: _passwordController,
-                                      obscureText: true,
-                                      decoration: const InputDecoration(
+                                      obscureText: _obscurePassword,
+                                      decoration: InputDecoration(
                                         hintText: 'Kata Sandi',
                                         filled: true,
-                                        fillColor: Color(0xFFF5FCF9),
-                                        contentPadding: EdgeInsets.symmetric(
-                                          horizontal: 20.0,
-                                          vertical: 18.0,
-                                        ),
-                                        border: OutlineInputBorder(
+                                        fillColor: const Color(0xFFF5FCF9),
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                              horizontal: 20.0,
+                                              vertical: 18.0,
+                                            ),
+                                        border: const OutlineInputBorder(
                                           borderSide: BorderSide.none,
                                           borderRadius: BorderRadius.all(
                                             Radius.circular(30),
                                           ),
                                         ),
-                                        prefixIcon: Icon(
+                                        prefixIcon: const Icon(
                                           Icons.lock,
                                           color: Color(0xFF00BF6D),
+                                        ),
+                                        suffixIcon: IconButton(
+                                          icon: Icon(
+                                            _obscurePassword
+                                                ? Icons.visibility_off
+                                                : Icons.visibility,
+                                            color: Colors.grey,
+                                          ),
+                                          onPressed: () {
+                                            setState(() {
+                                              _obscurePassword =
+                                                  !_obscurePassword;
+                                            });
+                                          },
                                         ),
                                       ),
                                       validator: (value) {
@@ -236,7 +252,6 @@ class _SignUpScreenState extends State<SignUpScreen>
                                         }
                                         return null;
                                       },
-                                      onSaved: (password) {},
                                     ),
                                   ),
 

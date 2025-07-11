@@ -224,8 +224,6 @@ class _SemuaLaporanPageState extends State<SemuaLaporanPage> {
                                                 fontSize: 14,
                                               ),
                                             ),
-                                            // Jika ingin menampilkan tanggal, bisa tambahkan di sini
-                                            // Text('2 jam yang lalu', style: TextStyle(fontSize: 12, color: Colors.grey)),
                                           ],
                                         ),
                                       ),
@@ -342,21 +340,26 @@ class _SemuaLaporanPageState extends State<SemuaLaporanPage> {
                                         ),
                                       const SizedBox(height: 6),
                                       // Tombol Komentar
-                                      TextButton.icon(
-                                        onPressed: () {
-                                          showModalBottomSheet(
-                                            context: context,
-                                            isScrollControlled: true,
-                                            builder:
-                                                (_) => CommentSection(
-                                                  reportId: laporan.id,
-                                                ),
-                                          );
-                                        },
-                                        icon: const Icon(Icons.comment),
-                                        label: const Text('Komentar'),
-                                        style: TextButton.styleFrom(
-                                          foregroundColor: Color(0xFF00BF6D),
+                                      Align(
+                                        alignment: Alignment.center,
+                                        child: TextButton.icon(
+                                          onPressed: () {
+                                            showModalBottomSheet(
+                                              context: context,
+                                              isScrollControlled: true,
+                                              builder:
+                                                  (_) => CommentSection(
+                                                    reportId: laporan.id,
+                                                  ),
+                                            );
+                                          },
+                                          icon: const Icon(Icons.comment),
+                                          label: const Text('Komentar'),
+                                          style: TextButton.styleFrom(
+                                            foregroundColor: const Color(
+                                              0xFF00BF6D,
+                                            ),
+                                          ),
                                         ),
                                       ),
                                     ],

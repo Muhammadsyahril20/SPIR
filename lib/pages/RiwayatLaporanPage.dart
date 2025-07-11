@@ -1,21 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:pelaporan_insfrastruktur_rusak/models/laporan_model.dart';
 import 'package:pelaporan_insfrastruktur_rusak/services/api_service.dart';
+import 'package:awesome_dialog/awesome_dialog.dart';
 
 class RiwayatLaporanPage extends StatefulWidget {
-  const RiwayatLaporanPage({super.key});
+  final bool refresh;
+
+  const RiwayatLaporanPage({super.key, this.refresh = false});
 
   @override
   State<RiwayatLaporanPage> createState() => _RiwayatLaporanPageState();
 }
 
 class _RiwayatLaporanPageState extends State<RiwayatLaporanPage> {
-  late Future<List<Laporan>> _futureLaporan;
+  Future<List<Laporan>>? _futureLaporan;
 
   @override
-  void initState() {
-    super.initState();
-    _futureLaporan = ApiService().getMyReports();
+  void didUpdateWidget(RiwayatLaporanPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.refresh) {
+      _refreshData();
+    }
   }
 
   void _refreshData() {
@@ -25,38 +30,30 @@ class _RiwayatLaporanPageState extends State<RiwayatLaporanPage> {
   }
 
   Future<void> _confirmDelete(int reportId) async {
-    final confirmed = await showDialog<bool>(
+    AwesomeDialog(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            title: const Text('Konfirmasi'),
-            content: const Text('Yakin ingin menghapus laporan ini?'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text('Batal'),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: const Text('Hapus'),
-              ),
-            ],
-          ),
-    );
-
-    if (confirmed == true) {
-      try {
-        await ApiService().deleteMyReport(reportId);
-        _refreshData();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Laporan berhasil dihapus')),
-        );
-      } catch (e) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Gagal menghapus laporan: $e')));
-      }
-    }
+      dialogType: DialogType.warning,
+      animType: AnimType.rightSlide,
+      title: 'Konfirmasi',
+      desc: 'Yakin ingin menghapus laporan ini?',
+      btnCancelText: 'Batal',
+      btnOkText: 'Hapus',
+      btnCancelOnPress: () {},
+      btnOkOnPress: () async {
+        try {
+          await ApiService().deleteMyReport(reportId);
+          _refreshData();
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Laporan berhasil dihapus')),
+          );
+        } catch (e) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Gagal menghapus laporan: $e')),
+          );
+        }
+      },
+      btnOkColor: Colors.red,
+    ).show();
   }
 
   @override

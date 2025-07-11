@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pelaporan_insfrastruktur_rusak/pages/map_picker_date.dart';
 import '../services/api_service.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as path;
 
 class LaporkanPage extends StatefulWidget {
   const LaporkanPage({super.key});
@@ -31,14 +34,54 @@ class _LaporkanPageState extends State<LaporkanPage> {
     _categoriesFuture = _apiService.fetchCategories();
   }
 
+  void showLoadingDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12.0),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: const [
+                CircularProgressIndicator(color: Color(0xFF00BF6D)),
+                SizedBox(height: 16),
+                Text('Mengirim laporan...', style: TextStyle(fontSize: 16)),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Future<void> _pickImage() async {
     final XFile? pickedImage = await _picker.pickImage(
-      source: ImageSource.gallery,
+      source: ImageSource.camera,
     );
     if (pickedImage != null) {
-      setState(() {
-        _image = pickedImage;
-      });
+      final dir = await getTemporaryDirectory();
+      final targetPath = path.join(
+        dir.path,
+        "${DateTime.now().millisecondsSinceEpoch}.jpg",
+      );
+
+      final compressedFile = await FlutterImageCompress.compressAndGetFile(
+        pickedImage.path,
+        targetPath,
+        quality:
+            70, // kamu bisa atur 0-100 (semakin kecil, semakin kecil ukuran file)
+      );
+
+      if (compressedFile != null) {
+        setState(() {
+          _image = XFile(compressedFile.path);
+        });
+      }
     }
   }
 
@@ -71,6 +114,8 @@ class _LaporkanPageState extends State<LaporkanPage> {
         return;
       }
 
+      showLoadingDialog();
+
       try {
         await _apiService.createReport(
           title: _titleController.text,
@@ -81,6 +126,8 @@ class _LaporkanPageState extends State<LaporkanPage> {
           photo: File(_image!.path),
           categoryId: _selectedCategoryId!,
         );
+
+        Navigator.of(context).pop();
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Laporan berhasil dikirim')),

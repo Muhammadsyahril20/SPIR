@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:pelaporan_insfrastruktur_rusak/pages/onboarding.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pelaporan_insfrastruktur_rusak/pages/splash_screen.dart';
 
 void main() {
   runApp(MyApp());
@@ -12,12 +12,13 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Pelaporan Infrastruktur Rusak',
       theme: ThemeData(
         primarySwatch: Colors.green,
         textTheme: GoogleFonts.manropeTextTheme(),
       ),
-      home: OnboardingPage1(), // Mulai dari onboarding
+      home: SplashScreen(), // Mulai dari onboarding
     );
   }
 }

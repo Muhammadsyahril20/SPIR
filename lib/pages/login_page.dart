@@ -19,6 +19,7 @@ class _SignInScreenState extends State<SignInScreen>
   late AnimationController _controller;
   late Animation<double> _opacity;
   bool _isLoading = false;
+  bool _obscurePassword = true;
   String? _errorMessage;
 
   @override
@@ -64,6 +65,8 @@ class _SignInScreenState extends State<SignInScreen>
       if (result['status']) {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('token', result['access_token']);
+        await prefs.setBool('isLoggedIn', true);
+        await prefs.setBool('hasSeenOnboarding', true);
 
         Navigator.pushReplacement(
           context,
@@ -220,24 +223,39 @@ class _SignInScreenState extends State<SignInScreen>
                                     ),
                                     child: TextFormField(
                                       controller: _passwordController,
-                                      obscureText: true,
-                                      decoration: const InputDecoration(
+                                      obscureText: _obscurePassword,
+                                      decoration: InputDecoration(
                                         hintText: 'Kata Sandi',
                                         filled: true,
-                                        fillColor: Color(0xFFF5FCF9),
-                                        contentPadding: EdgeInsets.symmetric(
-                                          horizontal: 20.0,
-                                          vertical: 18.0,
-                                        ),
-                                        border: OutlineInputBorder(
+                                        fillColor: const Color(0xFFF5FCF9),
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                              horizontal: 20.0,
+                                              vertical: 18.0,
+                                            ),
+                                        border: const OutlineInputBorder(
                                           borderSide: BorderSide.none,
                                           borderRadius: BorderRadius.all(
                                             Radius.circular(30),
                                           ),
                                         ),
-                                        prefixIcon: Icon(
+                                        prefixIcon: const Icon(
                                           Icons.lock,
                                           color: Color(0xFF00BF6D),
+                                        ),
+                                        suffixIcon: IconButton(
+                                          icon: Icon(
+                                            _obscurePassword
+                                                ? Icons.visibility_off
+                                                : Icons.visibility,
+                                            color: Colors.grey,
+                                          ),
+                                          onPressed: () {
+                                            setState(() {
+                                              _obscurePassword =
+                                                  !_obscurePassword;
+                                            });
+                                          },
                                         ),
                                       ),
                                       validator: (value) {
@@ -284,20 +302,6 @@ class _SignInScreenState extends State<SignInScreen>
                                     ),
                                   ),
                                   const SizedBox(height: 20.0),
-                                  TextButton(
-                                    onPressed: () {
-                                      // TODO: Implementasi lupa kata sandi
-                                    },
-                                    child: Text(
-                                      'Lupa Kata Sandi?',
-                                      style: Theme.of(
-                                        context,
-                                      ).textTheme.bodyMedium!.copyWith(
-                                        color: Color(0xFF00BF6D),
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ),
                                   TextButton(
                                     onPressed: () {
                                       Navigator.push(

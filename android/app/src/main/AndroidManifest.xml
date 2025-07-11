@@ -6,8 +6,8 @@
 
     <application
         android:name="${applicationName}"
-        android:label="pelaporan_insfrastruktur_rusak"
-        android:icon="@mipmap/ic_launcher">
+        android:label="SPIR"
+        android:icon="@mipmap/launcher_icon">
         <activity
             android:name="io.flutter.embedding.android.FlutterActivity"
             android:exported="true"

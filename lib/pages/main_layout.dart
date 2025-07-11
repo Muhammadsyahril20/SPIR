@@ -16,13 +16,6 @@ class MainLayout extends StatefulWidget {
 class _MainLayoutState extends State<MainLayout> {
   late int _currentIndex;
 
-  final List<Widget> _pages = const [
-    LaporkanPage(),
-    SemuaLaporanPage(),
-    RiwayatLaporanPage(),
-    AkunPage(),
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -32,7 +25,15 @@ class _MainLayoutState extends State<MainLayout> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(index: _currentIndex, children: _pages),
+      body: IndexedStack(
+        index: _currentIndex,
+        children: [
+          const LaporkanPage(),
+          const SemuaLaporanPage(),
+          RiwayatLaporanPage(refresh: _currentIndex == 2),
+          const AkunPage(),
+        ],
+      ),
       floatingActionButton:
           _currentIndex == 0
               ? null
@@ -56,10 +57,7 @@ class _MainLayoutState extends State<MainLayout> {
             icon: Icon(Icons.list),
             label: 'Semua Laporan',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.history),
-            label: 'Riwayat', // Tab Riwayat
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.history), label: 'Riwayat'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Akun'),
         ],
         onTap: (index) {

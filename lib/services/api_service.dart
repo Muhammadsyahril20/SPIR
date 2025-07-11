@@ -5,9 +5,10 @@ import 'package:pelaporan_insfrastruktur_rusak/models/user_model.dart';
 import '../models/laporan_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/comment_model.dart';
+import 'package:http_parser/http_parser.dart';
 
 class ApiService {
-  final String baseUrl = 'https://6cc739fc415f.ngrok-free.app/api';
+  final String baseUrl = 'https://ec5bf972245a.ngrok-free.app/api';
 
   // Register
   Future<Map<String, dynamic>> register(
@@ -143,7 +144,15 @@ class ApiService {
     request.fields['longitude'] = longitude.toString();
     request.fields['category_id'] = categoryId.toString();
 
-    request.files.add(await http.MultipartFile.fromPath('photo', photo.path));
+    final bytes = await photo.readAsBytes();
+    request.files.add(
+      http.MultipartFile.fromBytes(
+        'photo',
+        bytes,
+        filename: 'image.jpg',
+        contentType: MediaType('image', 'jpg'),
+      ),
+    );
 
     final response = await request.send();
     final responseBody = await response.stream.bytesToString();
