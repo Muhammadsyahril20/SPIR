@@ -1,15 +1,18 @@
 class Laporan {
+  final int id;
   final String title;
   final String description;
   final String location;
-  final double latitude; // Separate field for latitude
-  final double longitude; // Separate field for longitude
+  final double latitude;
+  final double longitude;
   final String status;
   final String? photoUrl;
   final String? category;
-  final int categoryId; // Required for creating reports
+  final int categoryId;
+  final String? userName;
 
   Laporan({
+    required this.id,
     required this.title,
     required this.description,
     required this.location,
@@ -19,10 +22,12 @@ class Laporan {
     required this.categoryId,
     this.photoUrl,
     this.category,
+    this.userName,
   });
 
   factory Laporan.fromJson(Map<String, dynamic> json) {
     return Laporan(
+      id: json['id'],
       title: json['title'] ?? '-',
       description: json['description'] ?? '-',
       location: json['location'] ?? '${json['latitude']}, ${json['longitude']}',
@@ -35,6 +40,7 @@ class Laporan {
               ? json['category']
               : json['category']?['name'],
       categoryId: int.tryParse(json['category_id'].toString()) ?? 0,
+      userName: json['user']?['name'],
     );
   }
 

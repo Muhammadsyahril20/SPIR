@@ -18,6 +18,47 @@ class _RiwayatLaporanPageState extends State<RiwayatLaporanPage> {
     _futureLaporan = ApiService().getMyReports();
   }
 
+  void _refreshData() {
+    setState(() {
+      _futureLaporan = ApiService().getMyReports();
+    });
+  }
+
+  Future<void> _confirmDelete(int reportId) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Konfirmasi'),
+            content: const Text('Yakin ingin menghapus laporan ini?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Batal'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('Hapus'),
+              ),
+            ],
+          ),
+    );
+
+    if (confirmed == true) {
+      try {
+        await ApiService().deleteMyReport(reportId);
+        _refreshData();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Laporan berhasil dihapus')),
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Gagal menghapus laporan: $e')));
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -39,9 +80,9 @@ class _RiwayatLaporanPageState extends State<RiwayatLaporanPage> {
 
           final laporanList = snapshot.data!;
           return ListView.separated(
+            padding: const EdgeInsets.all(16),
             itemCount: laporanList.length,
             separatorBuilder: (_, __) => const SizedBox(height: 12),
-            padding: const EdgeInsets.all(16),
             itemBuilder: (context, index) {
               final item = laporanList[index];
               return Card(
@@ -82,6 +123,29 @@ class _RiwayatLaporanPageState extends State<RiwayatLaporanPage> {
                                 style: TextStyle(fontWeight: FontWeight.bold),
                               ),
                               const Spacer(),
+                              PopupMenuButton<String>(
+                                onSelected: (value) {
+                                  if (value == 'hapus') {
+                                    _confirmDelete(item.id);
+                                  }
+                                },
+                                itemBuilder:
+                                    (context) => [
+                                      const PopupMenuItem(
+                                        value: 'hapus',
+                                        child: Row(
+                                          children: [
+                                            Icon(
+                                              Icons.delete,
+                                              color: Colors.red,
+                                            ),
+                                            SizedBox(width: 8),
+                                            Text('Hapus'),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                              ),
                               Icon(
                                 item.status == 'selesai'
                                     ? Icons.check_circle
@@ -153,20 +217,4 @@ class _RiwayatLaporanPageState extends State<RiwayatLaporanPage> {
       ),
     );
   }
-}
-
-class LaporanItem {
-  final String judul;
-  final String deskripsi;
-  final String lokasi;
-  final String? fotoUrl;
-  final String status;
-
-  LaporanItem({
-    required this.judul,
-    required this.deskripsi,
-    required this.lokasi,
-    this.fotoUrl,
-    required this.status,
-  });
 }

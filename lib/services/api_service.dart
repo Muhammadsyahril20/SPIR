@@ -4,10 +4,10 @@ import 'package:http/http.dart' as http;
 import 'package:pelaporan_insfrastruktur_rusak/models/user_model.dart';
 import '../models/laporan_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../models/comment_model.dart';
 
 class ApiService {
-  final String baseUrl =
-      'https://ac15-2400-9800-671-a8c-e884-fe59-b1fc-453d.ngrok-free.app/api';
+  final String baseUrl = 'https://6cc739fc415f.ngrok-free.app/api';
 
   // Register
   Future<Map<String, dynamic>> register(
@@ -153,6 +153,68 @@ class ApiService {
     } else {
       throw Exception('Failed to create report: $responseBody');
     }
+  }
+
+  // Hapus Laporan
+  Future<bool> deleteMyReport(int reportId) async {
+    final token = await getToken(); // Ambil token dari SharedPreferences
+
+    final response = await http.delete(
+      Uri.parse('$baseUrl/my-reports/$reportId'),
+      headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      // Bisa juga cek response.body untuk informasi error lebih lengkap
+      throw Exception('Gagal menghapus laporan');
+    }
+  }
+
+  // Get Komentar
+  Future<List<Comment>> fetchComments(int reportId) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/reports/$reportId/comments'),
+    );
+    if (response.statusCode == 200) {
+      final List data = jsonDecode(response.body)['data'];
+      return data.map((json) => Comment.fromJson(json)).toList();
+    } else {
+      throw Exception('Gagal memuat komentar');
+    }
+  }
+
+  // Tambah Komentar
+  Future<bool> postComment(int reportId, String content) async {
+    final token = await getToken();
+    final response = await http.post(
+      Uri.parse('$baseUrl/reports/$reportId/comments'),
+      headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
+      body: {'content': content},
+    );
+    return response.statusCode == 201;
+  }
+
+  // Update komentar
+  Future<bool> updateComment(int commentId, String content) async {
+    final token = await getToken();
+    final response = await http.put(
+      Uri.parse('$baseUrl/comments/$commentId'),
+      headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
+      body: {'content': content},
+    );
+    return response.statusCode == 200;
+  }
+
+  // Hapus komentar
+  Future<bool> deleteComment(int commentId) async {
+    final token = await getToken();
+    final response = await http.delete(
+      Uri.parse('$baseUrl/comments/$commentId'),
+      headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
+    );
+    return response.statusCode == 200;
   }
 
   // Get User Token

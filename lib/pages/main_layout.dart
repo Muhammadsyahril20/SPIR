@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'laporkan_page.dart';
 import 'semua_laporan_page.dart';
 import 'akun_page.dart';
+import 'RiwayatLaporanPage.dart';
 
 class MainLayout extends StatefulWidget {
   final int initialIndex;
@@ -18,6 +19,7 @@ class _MainLayoutState extends State<MainLayout> {
   final List<Widget> _pages = const [
     LaporkanPage(),
     SemuaLaporanPage(),
+    RiwayatLaporanPage(),
     AkunPage(),
   ];
 
@@ -53,6 +55,10 @@ class _MainLayoutState extends State<MainLayout> {
           BottomNavigationBarItem(
             icon: Icon(Icons.list),
             label: 'Semua Laporan',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.history),
+            label: 'Riwayat', // Tab Riwayat
           ),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Akun'),
         ],

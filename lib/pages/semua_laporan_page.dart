@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pelaporan_insfrastruktur_rusak/pages/comment_section.dart';
 import '../services/api_service.dart';
 import '../models/laporan_model.dart';
 
@@ -11,9 +12,8 @@ class SemuaLaporanPage extends StatefulWidget {
 
 class _SemuaLaporanPageState extends State<SemuaLaporanPage> {
   Future<List<Laporan>>? _cachedLaporan;
-  int? _selectedCategoryId; // Track selected category ID, null for all reports
+  int? _selectedCategoryId;
 
-  // Define category list with IDs based on PHP seeder data
   final List<Map<String, dynamic>> _categories = [
     {
       'id': 1,
@@ -196,77 +196,60 @@ class _SemuaLaporanPageState extends State<SemuaLaporanPage> {
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: InkWell(
-                              onTap: () {},
-                              borderRadius: BorderRadius.circular(12),
-                              child: Padding(
-                                padding: const EdgeInsets.all(12.0),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Container(
-                                      width: 60,
-                                      height: 60,
-                                      decoration: const BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        image: DecorationImage(
-                                          image: AssetImage('assets/logo.jpg'),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // 🔹 Header: Nama Pelapor & Status
+                                Padding(
+                                  padding: const EdgeInsets.all(12.0),
+                                  child: Row(
+                                    children: [
+                                      const CircleAvatar(
+                                        backgroundImage: AssetImage(
+                                          'assets/logo.jpg',
+                                        ),
+                                        radius: 20,
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              laporan.userName ??
+                                                  'Tidak diketahui',
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 14,
+                                              ),
+                                            ),
+                                            // Jika ingin menampilkan tanggal, bisa tambahkan di sini
+                                            // Text('2 jam yang lalu', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                                          ],
                                         ),
                                       ),
-                                    ),
-                                    const SizedBox(width: 16),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                      Row(
                                         children: [
-                                          Text(
-                                            laporan.title,
-                                            style: const TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                            ),
+                                          Icon(
+                                            laporan.status == 'Sudah Selesai'
+                                                ? Icons.check_circle
+                                                : Icons.hourglass_top,
+                                            color:
+                                                laporan.status ==
+                                                        'Sudah Selesai'
+                                                    ? Colors.green
+                                                    : Colors.orange,
+                                            size: 16,
                                           ),
-                                          const SizedBox(height: 4),
+                                          const SizedBox(width: 6),
                                           Text(
-                                            laporan.description,
-                                            style:
-                                                Theme.of(
-                                                  context,
-                                                ).textTheme.bodyMedium,
-                                            maxLines: 2,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            'Lokasi: ${laporan.location}',
-                                            style:
-                                                Theme.of(
-                                                  context,
-                                                ).textTheme.bodySmall,
-                                          ),
-                                          if (laporan.photoUrl != null)
-                                            Container(
-                                              height: 150,
-                                              margin: const EdgeInsets.only(
-                                                top: 8.0,
-                                              ),
-                                              decoration: BoxDecoration(
-                                                borderRadius:
-                                                    BorderRadius.circular(8.0),
-                                                image: DecorationImage(
-                                                  fit: BoxFit.cover,
-                                                  image: NetworkImage(
-                                                    laporan.photoUrl!,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            'Status: ${laporan.status}',
+                                            laporan.status == 'Sudah Selesai'
+                                                ? 'Selesai'
+                                                : 'Diproses',
                                             style: TextStyle(
-                                              fontSize: 14,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w600,
                                               color:
                                                   laporan.status ==
                                                           'Sudah Selesai'
@@ -274,20 +257,112 @@ class _SemuaLaporanPageState extends State<SemuaLaporanPage> {
                                                       : Colors.orange,
                                             ),
                                           ),
-                                          if (laporan.category != null)
-                                            Text(
-                                              'Kategori: ${laporan.category}',
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+
+                                // 🔹 Gambar Laporan (jika ada)
+                                if (laporan.photoUrl != null)
+                                  ClipRRect(
+                                    borderRadius: const BorderRadius.vertical(
+                                      top: Radius.circular(0),
+                                    ),
+                                    child: Image.network(
+                                      laporan.photoUrl!,
+                                      width: double.infinity,
+                                      height: 180,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+
+                                // 🔹 Konten Laporan
+                                Padding(
+                                  padding: const EdgeInsets.all(12.0),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        laporan.title,
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        laporan.description,
+                                        style:
+                                            Theme.of(
+                                              context,
+                                            ).textTheme.bodyMedium,
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Row(
+                                        children: [
+                                          const Icon(
+                                            Icons.location_on,
+                                            size: 16,
+                                            color: Colors.grey,
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Expanded(
+                                            child: Text(
+                                              laporan.location,
                                               style:
                                                   Theme.of(
                                                     context,
                                                   ).textTheme.bodySmall,
                                             ),
+                                          ),
                                         ],
                                       ),
-                                    ),
-                                  ],
+                                      const SizedBox(height: 6),
+                                      if (laporan.category != null)
+                                        Row(
+                                          children: [
+                                            const Icon(
+                                              Icons.category,
+                                              size: 16,
+                                              color: Colors.grey,
+                                            ),
+                                            const SizedBox(width: 4),
+                                            Text(
+                                              laporan.category!,
+                                              style:
+                                                  Theme.of(
+                                                    context,
+                                                  ).textTheme.bodySmall,
+                                            ),
+                                          ],
+                                        ),
+                                      const SizedBox(height: 6),
+                                      // Tombol Komentar
+                                      TextButton.icon(
+                                        onPressed: () {
+                                          showModalBottomSheet(
+                                            context: context,
+                                            isScrollControlled: true,
+                                            builder:
+                                                (_) => CommentSection(
+                                                  reportId: laporan.id,
+                                                ),
+                                          );
+                                        },
+                                        icon: const Icon(Icons.comment),
+                                        label: const Text('Komentar'),
+                                        style: TextButton.styleFrom(
+                                          foregroundColor: Color(0xFF00BF6D),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
+                              ],
                             ),
                           ),
                         );
